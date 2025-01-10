@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include <string>
 using namespace std;
-
 
 struct Siparis {
     int id;
@@ -11,22 +11,52 @@ struct Siparis {
 };
 
 vector<Siparis> siparisler;
+const string DOSYA_ADI = "siparisler.txt";
 
-// Sipariş ekleme fonksiyonu
+
+void dosyadanOku() {
+    ifstream dosya(DOSYA_ADI);
+    if (dosya.is_open()) {
+        Siparis siparis;
+        while (dosya >> siparis.id) {
+            dosya.ignore(); 
+            getline(dosya, siparis.musteriAdi);
+            getline(dosya, siparis.siparisDetayi);
+            siparisler.push_back(siparis);
+        }
+        dosya.close();
+    }
+}
+
+
+void dosyayaKaydet() {
+    ofstream dosya(DOSYA_ADI, ios::trunc);
+    if (dosya.is_open()) {
+        for (const auto &siparis : siparisler) {
+            dosya << siparis.id << "\n"
+                  << siparis.musteriAdi << "\n"
+                  << siparis.siparisDetayi << "\n";
+        }
+        dosya.close();
+    }
+}
+
+
 void kayitEkle() {
     Siparis yeniSiparis;
     cout << "Siparis ID: ";
     cin >> yeniSiparis.id;
-    cin.ignore(); 
+    cin.ignore();
     cout << "Musteri Adi: ";
     getline(cin, yeniSiparis.musteriAdi);
     cout << "Siparis Detayi: ";
     getline(cin, yeniSiparis.siparisDetayi);
     siparisler.push_back(yeniSiparis);
+    dosyayaKaydet();
     cout << "Siparis basariyla eklendi!\n";
 }
 
-// Sipariş silme fonksiyonu
+
 void kayitSil() {
     int silinecekID;
     cout << "Silinecek Siparis ID: ";
@@ -34,6 +64,7 @@ void kayitSil() {
     for (auto it = siparisler.begin(); it != siparisler.end(); ++it) {
         if (it->id == silinecekID) {
             siparisler.erase(it);
+            dosyayaKaydet();
             cout << "Siparis basariyla silindi!\n";
             return;
         }
@@ -41,18 +72,19 @@ void kayitSil() {
     cout << "Siparis bulunamadi.\n";
 }
 
-// Sipariş güncelleme fonksiyonu
+
 void kayitGuncelle() {
     int guncellenecekID;
     cout << "Guncellenecek Siparis ID: ";
     cin >> guncellenecekID;
     for (auto &siparis : siparisler) {
         if (siparis.id == guncellenecekID) {
-            cin.ignore(); // Buffer temizleme
+            cin.ignore();
             cout << "Yeni Musteri Adi: ";
             getline(cin, siparis.musteriAdi);
             cout << "Yeni Siparis Detayi: ";
             getline(cin, siparis.siparisDetayi);
+            dosyayaKaydet();
             cout << "Siparis basariyla guncellendi!\n";
             return;
         }
@@ -60,7 +92,7 @@ void kayitGuncelle() {
     cout << "Siparis bulunamadi.\n";
 }
 
-// Sipariş arama fonksiyonu
+
 void kayitAra() {
     int arananID;
     cout << "Aranacak Siparis ID: ";
@@ -77,7 +109,7 @@ void kayitAra() {
     cout << "Siparis bulunamadi.\n";
 }
 
-// Menü fonksiyonu
+
 void menu() {
     int secim;
     do {
@@ -101,9 +133,8 @@ void menu() {
     } while (secim != 5);
 }
 
-
 int main() {
+    dosyadanOku(); 
     menu();
     return 0;
 }
-
